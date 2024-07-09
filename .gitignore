@@ -1,6 +1,10 @@
 # compiled output
 /dist
 /node_modules
+.dockerignore
+.gitignore
+.git
+*.env
 
 # Logs
 logs

@@ -12,10 +12,10 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
         private readonly connection: Connection,
     ) { }
 
-    async create({ document, options = undefined }: {
-        document: Omit<TDocument, '_id'>;
-        options: SaveOptions | undefined;
-    }): Promise<TDocument> {
+    async create(
+        document: Omit<TDocument, '_id'>,
+        options?: SaveOptions
+    ): Promise<TDocument> {
         const createdDoc = new this.model({
             _id: new Types.ObjectId(),
             ...document,
@@ -24,7 +24,7 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
         return ((await createdDoc.save(options)).toJSON() as unknown as TDocument)
     }
 
-    async findOne({ filterQuery }: { filterQuery: FilterQuery<TDocument> }): Promise<TDocument extends any[] ? import("mongoose").Require_id<import("mongoose").FlattenMaps<TDocument>>[] : import("mongoose").Require_id<import("mongoose").FlattenMaps<TDocument>>> {
+    async findOne(filterQuery: FilterQuery<TDocument>): Promise<TDocument extends any[] ? import("mongoose").Require_id<import("mongoose").FlattenMaps<TDocument>>[] : import("mongoose").Require_id<import("mongoose").FlattenMaps<TDocument>>> {
         const doc = await this.model.findOne(filterQuery, {}, { lean: true })
         if (!doc) {
             this.logger.warn(`Document not found with filterQuery : `, filterQuery)
@@ -34,10 +34,10 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
         return doc;
     }
 
-    async findOneAndUpdate({ filterQuery, update }: {
-        filterQuery: FilterQuery<TDocument>;
-        update: UpdateQuery<TDocument>;
-    }): Promise<TDocument extends any[] ? import("mongoose").Require_id<import("mongoose").FlattenMaps<TDocument>>[] : import("mongoose").Require_id<import("mongoose").FlattenMaps<TDocument>>> {
+    async findOneAndUpdate(
+        filterQuery: FilterQuery<TDocument>,
+        update: UpdateQuery<TDocument>
+    ): Promise<TDocument extends any[] ? import("mongoose").Require_id<import("mongoose").FlattenMaps<TDocument>>[] : import("mongoose").Require_id<import("mongoose").FlattenMaps<TDocument>>> {
         const doc = await this.model.findOneAndUpdate(filterQuery, update, {
             lean: true,
             new: true,
@@ -51,10 +51,10 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
         return doc;
     }
 
-    async upsert({ filterQuery, document }: {
-        filterQuery: FilterQuery<TDocument>;
-        document: Partial<TDocument>;
-    }): Promise<TDocument extends any[] ? import("mongoose").Require_id<import("mongoose").FlattenMaps<TDocument>>[] : import("mongoose").Require_id<import("mongoose").FlattenMaps<TDocument>>> {
+    async upsert(
+        filterQuery: FilterQuery<TDocument>,
+        document: Partial<TDocument>
+    ): Promise<TDocument extends any[] ? import("mongoose").Require_id<import("mongoose").FlattenMaps<TDocument>>[] : import("mongoose").Require_id<import("mongoose").FlattenMaps<TDocument>>> {
         return await this.model.findOneAndUpdate(filterQuery, document, {
             lean: true,
             upsert: true,
@@ -62,7 +62,10 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
         });
     }
 
-    async find({ filterQuery, limit = 20, offset = 1 }: { filterQuery: FilterQuery<TDocument>; limit: number; offset: number; }): Promise<import("mongoose").Require_id < import("mongoose").FlattenMaps < TDocument >>[]> {
+    async find(
+        filterQuery: FilterQuery<TDocument>,
+        limit = 20, offset = 1
+    ): Promise<import("mongoose").Require_id < import("mongoose").FlattenMaps < TDocument >>[]> {
         return await this.model.find(filterQuery, {}, { lean: true }).skip(offset).limit(limit)
     }
 
@@ -70,6 +73,6 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
         const session = await this.connection.startSession();
         session.startTransaction();
         return session;
-      }
+    }
 
 }
